@@ -271,6 +271,6 @@ select {
   padding: 0;
 }
 ```
-###OUTPUT
+### OUTPUT
 
 ![Untitled design (1)](https://github.com/user-attachments/assets/acfadf62-7202-4f62-945c-bb43204b6c6f)

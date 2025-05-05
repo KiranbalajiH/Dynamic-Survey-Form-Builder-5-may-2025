@@ -36,176 +36,57 @@ Built using only `useState`, `useEffect`, and conditional rendering. No external
 
 ---
 
-## 📂 File Structure
+### PROGRAM:
 
-src/
-├── App.jsx
-├── main.jsx
-├── index.css
-public/
-├── index.html
+## Survey.jsx:
+'''
 
-yaml
-Copy
-Edit
-
----
-```
-🔹 main.jsx
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
-import "./index.css";
-
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-🔹 App.jsx
-jsx
-Copy
-Edit
-import React, { useState } from "react";
-
-function App() {
-  const [mode, setMode] = useState("build");
-  const [questions, setQuestions] = useState([]);
-  const [newQuestion, setNewQuestion] = useState({ text: "", type: "text", options: "" });
-  const [responses, setResponses] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-
-  const addQuestion = () => {
-    if (!newQuestion.text.trim()) return;
-    const question = {
-      id: Date.now(),
-      text: newQuestion.text,
-      type: newQuestion.type,
-      options: newQuestion.type !== "text" ? newQuestion.options.split(",").map(opt => opt.trim()) : [],
-    };
-    setQuestions([...questions, question]);
-    setNewQuestion({ text: "", type: "text", options: "" });
-  };
-
-  const removeQuestion = (id) => {
-    setQuestions(questions.filter(q => q.id !== id));
-  };
-
-  const handleChange = (id, value) => {
-    setResponses(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handleCheckboxChange = (id, option) => {
-    const current = responses[id] || [];
-    const updated = current.includes(option)
-      ? current.filter(o => o !== option)
-      : [...current, option];
-    handleChange(id, updated);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
-
-  return (
-    <div className="container">
-      <h1>Survey App</h1>
-      <div className="mode-toggle">
-        <button onClick={() => setMode("build")}>Build Mode</button>
-        <button onClick={() => setMode("fill")}>Fill Mode</button>
-      </div>
-
-      {mode === "build" && (
-        <div className="build-mode">
-          <h2>Create a Question</h2>
-          <input
-            placeholder="Question text"
-            value={newQuestion.text}
-            onChange={(e) => setNewQuestion({ ...newQuestion, text: e.target.value })}
-          />
-          <select
-            value={newQuestion.type}
-            onChange={(e) => setNewQuestion({ ...newQuestion, type: e.target.value })}
-          >
-            <option value="text">Text</option>
-            <option value="radio">Radio</option>
-            <option value="checkbox">Checkbox</option>
-          </select>
-          {(newQuestion.type === "radio" || newQuestion.type === "checkbox") && (
-            <input
-              placeholder="Options (comma separated)"
-              value={newQuestion.options}
-              onChange={(e) => setNewQuestion({ ...newQuestion, options: e.target.value })}
-            />
-          )}
-          <button onClick={addQuestion}>Add Question</button>
-
-          <ul className="question-list">
-            {questions.map((q) => (
-              <li key={q.id}>
-                <strong>{q.text}</strong> ({q.type})
-                <button onClick={() => removeQuestion(q.id)}>Remove</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {mode === "fill" && (
-        <div className="fill-mode">
-          <h2>Fill Out the Survey</h2>
+    import React, { useState } from "react";
+    import "./Survey.css";
+    
+    function Survey({ questions }) {
+      const [answers, setAnswers] = useState({});
+      const [submitted, setSubmitted] = useState(false);
+    
+      const handleChange = (id, value) => {
+        setAnswers((prev) => ({ ...prev, [id]: value }));
+      };
+    
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        setSubmitted(true);
+      };
+    
+      return (
+        <div className="survey-container">
           {!submitted ? (
             <form onSubmit={handleSubmit}>
               {questions.map((q) => (
-                <div key={q.id} className="question">
-                  <label>{q.text}</label>
-                  {q.type === "text" && (
-                    <input
-                      type="text"
-                      value={responses[q.id] || ""}
-                      onChange={(e) => handleChange(q.id, e.target.value)}
-                    />
-                  )}
-                  {q.type === "radio" &&
-                    q.options.map((opt, i) => (
-                      <label key={i}>
-                        <input
-                          type="radio"
-                          name={`radio-${q.id}`}
-                          value={opt}
-                          checked={responses[q.id] === opt}
-                          onChange={() => handleChange(q.id, opt)}
-                        />
-                        {opt}
-                      </label>
-                    ))}
-                  {q.type === "checkbox" &&
-                    q.options.map((opt, i) => (
-                      <label key={i}>
-                        <input
-                          type="checkbox"
-                          value={opt}
-                          checked={(responses[q.id] || []).includes(opt)}
-                          onChange={() => handleCheckboxChange(q.id, opt)}
-                        />
-                        {opt}
-                      </label>
-                    ))}
+                <div key={q.id} className="question-block">
+                  <p>{q.text}</p>
+                  {q.options.map((opt, i) => (
+                    <label key={i}>
+                      <input
+                        type="radio"
+                        name={`radio-${q.id}`}
+                        value={opt}
+                        checked={answers[q.id] === opt}
+                        onChange={() => handleChange(q.id, opt)}
+                      />
+                      {opt}
+                    </label>
+                  ))}
                 </div>
               ))}
               <button type="submit">Submit</button>
             </form>
           ) : (
             <div className="summary">
-              <h3>Summary of Responses</h3>
+              <h3>Your Responses</h3>
               <ul>
                 {questions.map((q) => (
                   <li key={q.id}>
-                    <strong>{q.text}</strong>:{" "}
-                    {Array.isArray(responses[q.id])
-                      ? responses[q.id].join(", ")
-                      : responses[q.id]}
+                    <strong>{q.text}</strong>: {answers[q.id]}
                   </li>
                 ))}
               </ul>
@@ -213,64 +94,82 @@ function App() {
             </div>
           )}
         </div>
-      )}
-    </div>
-  );
-}
+      );
+    }
+    
+    export default Survey;
 
-export default App;
+'''
+## APP.JSX:
+'''
 
-```
- index.css
+    import React, { useState } from "react";
+    import Survey from "./Survey";
+    
+    function App() {
+      const [questions, setQuestions] = useState([
+        {
+          id: 1,
+          text: "What is your favorite color?",
+          type: "radio",
+          options: ["Red", "Blue", "Green", "Yellow"],
+        },
+        {
+          id: 2,
+          text: "Choose your preferred pet:",
+          type: "radio",
+          options: ["Dog", "Cat", "Bird", "Fish"],
+        },
+      ]);
+    
+      return (
+        <div className="container">
+          <h1>Radio Survey App</h1>
+          <Survey questions={questions} />
+        </div>
+      );
+    }
+    
+    export default App;
 
-```
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  margin: 0;
-  padding: 0;
-}
+'''
+## SURVEY.CSS:
+'''
 
-.container {
-  max-width: 800px;
-  margin: auto;
-  padding: 20px;
-  background: white;
-  margin-top: 40px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
 
-.mode-toggle button {
-  margin-right: 10px;
-  padding: 10px 20px;
-  font-weight: bold;
-  cursor: pointer;
-}
+  .survey-container {
+      margin-top: 20px;
+      font-family: Arial, sans-serif;
+    }
+    
+    .question-block {
+      margin-bottom: 20px;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+    
+    label {
+      display: block;
+      margin-top: 6px;
+    }
+    
+    button {
+      padding: 10px 20px;
+      margin-top: 15px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background-color: #0056b3;
+    }
+    
+'''
 
-.build-mode input,
-.fill-mode input,
-select {
-  display: block;
-  margin: 10px 0;
-  padding: 8px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.question-list li {
-  margin-top: 10px;
-}
-
-.question {
-  margin-bottom: 20px;
-}
-
-.summary ul {
-  list-style-type: none;
-  padding: 0;
-}
-```
 ### OUTPUT
 
-![Untitled design (1)](https://github.com/user-attachments/assets/acfadf62-7202-4f62-945c-bb43204b6c6f)
+![image](https://github.com/user-attachments/assets/7aade021-4515-492a-af8e-e17241586d06)
